@@ -25,37 +25,39 @@ FEATURES:
 
    /ROMANIAN
    Granny Helper Mod v1.0
-   De [13_davidd.13]
+   Creat de [13_davidd.13]
 
+CE ÎȚI TREBUIE:
 
-MelonLoader v0.6.1 sau v0.7+ (Il2Cpp)
+MelonLoader v0.6.1 sau versiuni mai noi (v0.7+) (Il2Cpp)
 
-INSTALARE:
+CUM SE INSTALEAZĂ:
 
-Instalați MelonLoader în folderul jocului dvs. „Granny - Recaptured”.
+Instalează MelonLoader în folderul jocului tău, „Granny - Recaptured”.
 
-Rulați jocul o dată.
+Pornește jocul o dată.
 
-Trageți fișierul „GrannyXslayderMod.dll” în folderul „Mods” din directorul jocului.
+Trage fișierul GrannyHelper.dll direct în folderul Mods din directorul jocului.
 
-Rulați jocul!
+Gata! Acum poți intra în joc.
 
-FUNCȚIONALITĂȚI:
+CE ȘTIE SĂ FACĂ:
 
-SCHIMBĂTOR FOV (Câmp Vizual):
+SCHIMBARE FOV (Câmp Vizual):
 
-Apăsați F1 pentru a deschide consola (sau verificați fereastra MelonLoader).
+Apasă F1 ca să deschizi consola (sau uită-te în fereastra MelonLoader).
 
-Introduceți orice număr (de ex., 110) pentru a schimba instantaneu FOV-ul.
+Scrie un număr oarecare (de exemplu, 110) și FOV-ul se schimbă pe loc.
 
-SĂRIRE RAPIDĂ (Țineți apăsat 'B'):
+SĂRITURĂ TURBO (Ține apăsat 'B'):
 
-Țineți apăsat 'B' în timpul animației de „Trezire” (Wake Up) sau în timpul Scenei de Moarte (Death Scene).
+Ține tasta 'B' apăsată în timpul animației de „Trezire” sau când ești prins/mort.
 
-Accelerează jocul de 10 ori ca să nu trebuiască să așteptați.
+Mărește viteza jocului de 10 ori ca să nu pierzi timpul așteptând.
 
-RESTART RAPID (Apăsați 'V'):
+RESTART RAPID (Apăsare 'V'):
 
-Resetează instantaneu sesiunea (run-ul) fără a închide jocul.
+Resetează instantaneu runda curentă, fără să trebuiască să ieși din joc.
 
-Păstrează setările de Dificultate și Randomizare.
+Păstrează neschimbate setările de Dificultate și Randomizare.
+(ai translation) 
