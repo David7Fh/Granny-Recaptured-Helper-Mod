@@ -7,7 +7,7 @@ REQUIREMENTS:
 INSTALLATION:
 1. Install MelonLoader into your "Granny - Recaptured" game folder.
 2. Run the game once.
-3. Drag the 'GrannyHelper.dll' into the 'Mods' folder in your game directory.
+3. Drag the 'GrannyXslayderMod.dll' into the 'Mods' folder in your game directory.
 4. Run the game!
 
 FEATURES:
@@ -36,7 +36,7 @@ Instalați MelonLoader în folderul jocului dvs. „Granny - Recaptured”.
 
 Rulați jocul o dată.
 
-Trageți fișierul „GrannyHelper.dll” în folderul „Mods” din directorul jocului.
+Trageți fișierul „GrannyXslayderMod.dll” în folderul „Mods” din directorul jocului.
 
 Rulați jocul!
 
