@@ -5,7 +5,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.2.0", "13.davidd")]
+[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.3.0", "13.davidd")]
 [assembly: MelonGame("Buttery Stancakes", "Granny - Recaptured")]
 [assembly: MelonColor(0, 255, 0, 255)]
 
@@ -18,14 +18,16 @@ namespace GrannyRecapturedMods
 
         private Camera _cachedCamera;
         private FirstPersonController _player;
+        
+        // Turbo Variables
         private AudioSource[] _cachedAudioSources;
+        private bool _isMenu = true;
+        private bool _isSpeeding = false;
+        private float _pendingFovChange = -1f;
 
         private const float TurboSpeed = 10f;
         private const KeyCode TurboKey = KeyCode.B;
         private const KeyCode RestartKey = KeyCode.V;
-
-        private bool _isSpeeding = false;
-        private float _pendingFovChange = -1f;
 
         public override void OnInitializeMelon()
         {
@@ -33,9 +35,9 @@ namespace GrannyRecapturedMods
             FovEntry = MyConfig.CreateEntry<float>("SavedFOV", 110f, "Your Custom FOV");
 
             LoggerInstance.Msg("------------------------------------------------");
-            LoggerInstance.Msg(" GRANNY HELPER v1.2.0");
-            LoggerInstance.Msg(" [V] Clean Restart");
-            LoggerInstance.Msg(" [B] Ultra-Skip");
+            LoggerInstance.Msg(" GRANNY HELPER v1.3.0");
+            LoggerInstance.Msg(" [V] Instant Restart");
+            LoggerInstance.Msg(" [B] Ultra-Skip (Fixed Audio)");
             LoggerInstance.Msg("------------------------------------------------");
 
             var consoleThread = new Thread(ConsoleInputListener) { IsBackground = true };
@@ -46,8 +48,11 @@ namespace GrannyRecapturedMods
         {
             _cachedCamera = null;
             _player = null;
-            _isSpeeding = false;
             _cachedAudioSources = null;
+            _isSpeeding = false;
+
+            _isMenu = sceneName.Equals("Menu", StringComparison.OrdinalIgnoreCase);
+            
             Time.timeScale = 1.0f;
         }
 
@@ -60,9 +65,11 @@ namespace GrannyRecapturedMods
                 _pendingFovChange = -1f;
             }
 
+            if (_isMenu) return;
+
             if (Input.GetKeyDown(RestartKey))
             {
-                MelonCoroutines.Start(PerformCleanRestartRoutine());
+                PerformInstantRestart();
             }
 
             HandleTurboMode();
@@ -70,9 +77,9 @@ namespace GrannyRecapturedMods
 
         public override void OnLateUpdate()
         {
-            if (_cachedCamera == null)
+            if (_isMenu || _cachedCamera == null)
             {
-                _cachedCamera = Camera.main;
+                if (!_isMenu && _cachedCamera == null) _cachedCamera = Camera.main;
                 return;
             }
 
@@ -82,56 +89,60 @@ namespace GrannyRecapturedMods
             }
         }
 
-        private IEnumerator PerformCleanRestartRoutine()
+        private void PerformInstantRestart()
         {
             Time.timeScale = 1.0f;
-            ApplyPitchToCache(1.0f);
-
-            SceneManager.LoadScene("Menu");
-
-            while (SceneManager.GetActiveScene().name != "Menu")
-                yield return null;
-
-            yield return new WaitForSecondsRealtime(0.1f);
-
-            var menuScript = UnityEngine.Object.FindObjectOfType<Menu>();
-            if (menuScript != null)
-            {
-                menuScript.StartGame();
-            }
+            ResetAllAudio(); 
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         private void HandleTurboMode()
         {
             if (Time.timeScale == 0f && !_isSpeeding) return;
 
-            if (Input.GetKey(TurboKey) && IsSafeToSkip())
+            bool safe = IsSafeToSkip();
+
+            if (Input.GetKey(TurboKey) && safe)
             {
                 if (!_isSpeeding)
                 {
+                    // --- START TURBO ---
                     _isSpeeding = true;
                     Time.timeScale = TurboSpeed;
+
+                    // Find current audio and pitch UP
                     _cachedAudioSources = UnityEngine.Object.FindObjectsOfType<AudioSource>();
-                    ApplyPitchToCache(TurboSpeed);
+                    ApplyPitchToCache(_cachedAudioSources, TurboSpeed);
                 }
             }
             else
             {
                 if (_isSpeeding)
                 {
+                    // --- STOP TURBO ---
                     _isSpeeding = false;
                     Time.timeScale = 1.0f;
-                    ApplyPitchToCache(1.0f);
+
+                    // FIX: Perform a FRESH scan here. 
+                    // This finds any audio that started playing *during* the skip
+                    // and forces it back to normal.
+                    ResetAllAudio();
+                    
                     _cachedAudioSources = null;
                 }
             }
         }
 
-        private void ApplyPitchToCache(float pitch)
+        private void ResetAllAudio()
         {
-            if (_cachedAudioSources == null) return;
+            var allAudio = UnityEngine.Object.FindObjectsOfType<AudioSource>();
+            ApplyPitchToCache(allAudio, 1.0f);
+        }
 
-            foreach (var audio in _cachedAudioSources)
+        private void ApplyPitchToCache(AudioSource[] sources, float pitch)
+        {
+            if (sources == null) return;
+            foreach (var audio in sources)
             {
                 if (audio) audio.pitch = pitch;
             }
