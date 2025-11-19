@@ -1,4 +1,4 @@
-Granny Helper Mod v1.0
+Granny Helper Mod v1.3
 By [13_davidd.13]
 
 REQUIREMENTS:
@@ -24,7 +24,7 @@ FEATURES:
    - Keeps your Difficulty and Randomize settings.
 
    /ROMANIAN
-   Granny Helper Mod v1.0
+   Granny Helper Mod v1.3
    Creat de [13_davidd.13]
 
 CE ÎȚI TREBUIE:
