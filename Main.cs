@@ -1,11 +1,11 @@
-﻿using Il2Cpp;
 using MelonLoader;
 using System;
+using System.Collections;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.0.0", "13.davidd pentru xslayder")]
+[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.2.0", "13.davidd")]
 [assembly: MelonGame("Buttery Stancakes", "Granny - Recaptured")]
 [assembly: MelonColor(0, 255, 0, 255)]
 
@@ -16,21 +16,16 @@ namespace GrannyRecapturedMods
         public static MelonPreferences_Category MyConfig;
         public static MelonPreferences_Entry<float> FovEntry;
 
-        private bool _isMenu = true;
-        private bool _sceneIsSafe = false;
-        private float _safetyTimer = 0f;
-
-        private bool _isRestarting = false;
-        private float _restartDelay = 0f;
-
         private Camera _cachedCamera;
         private FirstPersonController _player;
+        private AudioSource[] _cachedAudioSources;
 
         private const float TurboSpeed = 10f;
         private const KeyCode TurboKey = KeyCode.B;
-        private bool _isSpeeding = false;
-
         private const KeyCode RestartKey = KeyCode.V;
+
+        private bool _isSpeeding = false;
+        private float _pendingFovChange = -1f;
 
         public override void OnInitializeMelon()
         {
@@ -38,9 +33,9 @@ namespace GrannyRecapturedMods
             FovEntry = MyConfig.CreateEntry<float>("SavedFOV", 110f, "Your Custom FOV");
 
             LoggerInstance.Msg("------------------------------------------------");
-            LoggerInstance.Msg($" GRANNY HELPER v1.0.0");
-            LoggerInstance.Msg($" [V] Clean Restart");
-            LoggerInstance.Msg($" [B] Ultra-Skip");
+            LoggerInstance.Msg(" GRANNY HELPER v1.2.0");
+            LoggerInstance.Msg(" [V] Clean Restart");
+            LoggerInstance.Msg(" [B] Ultra-Skip");
             LoggerInstance.Msg("------------------------------------------------");
 
             var consoleThread = new Thread(ConsoleInputListener) { IsBackground = true };
@@ -51,152 +46,105 @@ namespace GrannyRecapturedMods
         {
             _cachedCamera = null;
             _player = null;
-            _sceneIsSafe = false;
-
-            ForceAudioPitch(1.0f);
-            Time.timeScale = 1.0f;
             _isSpeeding = false;
-
-            if (sceneName.Contains("Menu"))
-            {
-                _isMenu = true;
-                if (_isRestarting)
-                {
-                    _restartDelay = 0.1f;
-                    LoggerInstance.Msg("Restarting: Menu loaded, auto-starting...");
-                }
-            }
-            else
-            {
-                _isMenu = false;
-                _isRestarting = false;
-                _safetyTimer = 3.0f;
-            }
+            _cachedAudioSources = null;
+            Time.timeScale = 1.0f;
         }
 
         public override void OnUpdate()
         {
-            if (_isMenu && _isRestarting)
+            if (_pendingFovChange != -1f)
             {
-                _restartDelay -= Time.unscaledDeltaTime;
-                if (_restartDelay <= 0f)
-                {
-                    var menuScript = UnityEngine.Object.FindObjectOfType<Menu>();
-                    if (menuScript != null)
-                    {
-                        menuScript.StartGame();
-                        _isRestarting = false;
-                    }
-                }
-                return;
+                FovEntry.Value = _pendingFovChange;
+                MyConfig.SaveToFile();
+                _pendingFovChange = -1f;
             }
-
-            if (_isMenu) return;
 
             if (Input.GetKeyDown(RestartKey))
             {
-                PerformCleanRestart();
-                return;
-            }
-
-            if (_safetyTimer > 0f)
-            {
-                _safetyTimer -= Time.deltaTime;
-                if (_safetyTimer <= 0f) _sceneIsSafe = true;
-                return;
+                MelonCoroutines.Start(PerformCleanRestartRoutine());
             }
 
             HandleTurboMode();
-
-            if (_sceneIsSafe && _cachedCamera == null)
-            {
-                try { _cachedCamera = Camera.main; } catch { }
-            }
         }
 
         public override void OnLateUpdate()
         {
-            if (_isMenu || !_sceneIsSafe || _cachedCamera == null) return;
-
-            try
+            if (_cachedCamera == null)
             {
-                float target = FovEntry.Value;
-                if (Math.Abs(_cachedCamera.fieldOfView - target) > 0.01f)
-                {
-                    _cachedCamera.fieldOfView = target;
-                }
+                _cachedCamera = Camera.main;
+                return;
             }
-            catch { _cachedCamera = null; }
+
+            if (Math.Abs(_cachedCamera.fieldOfView - FovEntry.Value) > 0.1f)
+            {
+                _cachedCamera.fieldOfView = FovEntry.Value;
+            }
         }
 
-        private void PerformCleanRestart()
+        private IEnumerator PerformCleanRestartRoutine()
         {
-            LoggerInstance.Msg("[Game] Clean Restart Initiated...");
-
             Time.timeScale = 1.0f;
-            ForceAudioPitch(1.0f);
-            _isSpeeding = false;
-
-            _isRestarting = true;
+            ApplyPitchToCache(1.0f);
 
             SceneManager.LoadScene("Menu");
+
+            while (SceneManager.GetActiveScene().name != "Menu")
+                yield return null;
+
+            yield return new WaitForSecondsRealtime(0.1f);
+
+            var menuScript = UnityEngine.Object.FindObjectOfType<Menu>();
+            if (menuScript != null)
+            {
+                menuScript.StartGame();
+            }
         }
 
         private void HandleTurboMode()
         {
-            if (Input.GetKey(TurboKey))
+            if (Time.timeScale == 0f && !_isSpeeding) return;
+
+            if (Input.GetKey(TurboKey) && IsSafeToSkip())
             {
-                if (IsSafeToSkip())
+                if (!_isSpeeding)
                 {
-                    if (!_isSpeeding)
-                    {
-                        Time.timeScale = TurboSpeed;
-                        ForceAudioPitch(TurboSpeed);
-                        _isSpeeding = true;
-                    }
-                }
-                else
-                {
-                    ResetSpeed();
+                    _isSpeeding = true;
+                    Time.timeScale = TurboSpeed;
+                    _cachedAudioSources = UnityEngine.Object.FindObjectsOfType<AudioSource>();
+                    ApplyPitchToCache(TurboSpeed);
                 }
             }
             else
             {
-                ResetSpeed();
+                if (_isSpeeding)
+                {
+                    _isSpeeding = false;
+                    Time.timeScale = 1.0f;
+                    ApplyPitchToCache(1.0f);
+                    _cachedAudioSources = null;
+                }
+            }
+        }
+
+        private void ApplyPitchToCache(float pitch)
+        {
+            if (_cachedAudioSources == null) return;
+
+            foreach (var audio in _cachedAudioSources)
+            {
+                if (audio) audio.pitch = pitch;
             }
         }
 
         private bool IsSafeToSkip()
         {
-            if (_player == null) _player = UnityEngine.Object.FindObjectOfType<FirstPersonController>();
+            if (_player == null)
+                _player = UnityEngine.Object.FindObjectOfType<FirstPersonController>();
+
             if (_player == null) return false;
 
-            if (_player.dead) return true;
-            if (DayCounter.InBed && (_player.noControl || _player.frozen)) return true;
-
-            return false;
-        }
-
-        private void ResetSpeed()
-        {
-            if (_isSpeeding)
-            {
-                if (Time.timeScale > 0.1f)
-                {
-                    Time.timeScale = 1.0f;
-                    ForceAudioPitch(1.0f);
-                    _isSpeeding = false;
-                }
-            }
-        }
-
-        private void ForceAudioPitch(float pitch)
-        {
-            var allAudio = UnityEngine.Object.FindObjectsOfType<AudioSource>();
-            foreach (var audio in allAudio)
-            {
-                if (audio != null) audio.pitch = pitch;
-            }
+            return _player.dead || (DayCounter.InBed && (_player.noControl || _player.frozen));
         }
 
         private void ConsoleInputListener()
@@ -211,9 +159,7 @@ namespace GrannyRecapturedMods
                         string cleanInput = input.ToLower().Replace("fov", "").Trim();
                         if (float.TryParse(cleanInput, out float newFov))
                         {
-                            newFov = Mathf.Clamp(newFov, 30f, 160f);
-                            FovEntry.Value = newFov;
-                            MyConfig.SaveToFile();
+                            _pendingFovChange = Mathf.Clamp(newFov, 30f, 160f);
                         }
                     }
                 }
