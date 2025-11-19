@@ -119,13 +119,8 @@ namespace GrannyRecapturedMods
             {
                 if (_isSpeeding)
                 {
-                    // --- STOP TURBO ---
                     _isSpeeding = false;
-                    Time.timeScale = 1.0f;
-
-                    // FIX: Perform a FRESH scan here. 
-                    // This finds any audio that started playing *during* the skip
-                    // and forces it back to normal.
+                    Time.timeScale = 1.0f;                   
                     ResetAllAudio();
                     
                     _cachedAudioSources = null;
@@ -179,3 +174,4 @@ namespace GrannyRecapturedMods
         }
     }
 }
+
