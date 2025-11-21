@@ -7,7 +7,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.4.0", "13.davidd")]
+[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.4.1", "13.davidd")]
 [assembly: MelonGame("Buttery Stancakes", "Granny - Recaptured")]
 [assembly: MelonColor(0, 255, 0, 255)]
 
@@ -37,9 +37,9 @@ namespace GrannyRecapturedMods
             FovEntry = MyConfig.CreateEntry<float>("SavedFOV", 110f, "Your Custom FOV");
 
             LoggerInstance.Msg("------------------------------------------------");
-            LoggerInstance.Msg(" GRANNY HELPER v1.4.0");
-            LoggerInstance.Msg(" [V] Instant Restart");
-            LoggerInstance.Msg(" [B] Ultra-Skip (Perfect Audio)");
+            LoggerInstance.Msg(" GRANNY HELPER v1.4.1");
+            LoggerInstance.Msg(" [V] Instant Restart (Pause Fix)");
+            LoggerInstance.Msg(" [B] Ultra-Skip");
             LoggerInstance.Msg("------------------------------------------------");
 
             var consoleThread = new Thread(ConsoleInputListener) { IsBackground = true };
@@ -56,6 +56,7 @@ namespace GrannyRecapturedMods
             _isMenu = sceneName.Equals("Menu", StringComparison.OrdinalIgnoreCase);
 
             Time.timeScale = 1.0f;
+            AudioListener.pause = false;
         }
 
         public override void OnUpdate()
@@ -94,6 +95,7 @@ namespace GrannyRecapturedMods
         private void PerformInstantRestart()
         {
             Time.timeScale = 1.0f;
+            AudioListener.pause = false;
             RestoreAudioPitches();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
