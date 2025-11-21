@@ -1,11 +1,13 @@
+using Il2Cpp;
 using MelonLoader;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.3.0", "13.davidd")]
+[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.4.0", "13.davidd")]
 [assembly: MelonGame("Buttery Stancakes", "Granny - Recaptured")]
 [assembly: MelonColor(0, 255, 0, 255)]
 
@@ -18,14 +20,14 @@ namespace GrannyRecapturedMods
 
         private Camera _cachedCamera;
         private FirstPersonController _player;
-        
-        // Turbo Variables
-        private AudioSource[] _cachedAudioSources;
+
+        private Dictionary<int, float> _originalPitches = new Dictionary<int, float>();
+
         private bool _isMenu = true;
         private bool _isSpeeding = false;
         private float _pendingFovChange = -1f;
 
-        private const float TurboSpeed = 10f;
+        private const float TurboSpeed = 20f;
         private const KeyCode TurboKey = KeyCode.B;
         private const KeyCode RestartKey = KeyCode.V;
 
@@ -35,9 +37,9 @@ namespace GrannyRecapturedMods
             FovEntry = MyConfig.CreateEntry<float>("SavedFOV", 110f, "Your Custom FOV");
 
             LoggerInstance.Msg("------------------------------------------------");
-            LoggerInstance.Msg(" GRANNY HELPER v1.3.0");
+            LoggerInstance.Msg(" GRANNY HELPER v1.4.0");
             LoggerInstance.Msg(" [V] Instant Restart");
-            LoggerInstance.Msg(" [B] Ultra-Skip (Fixed Audio)");
+            LoggerInstance.Msg(" [B] Ultra-Skip (Perfect Audio)");
             LoggerInstance.Msg("------------------------------------------------");
 
             var consoleThread = new Thread(ConsoleInputListener) { IsBackground = true };
@@ -48,11 +50,11 @@ namespace GrannyRecapturedMods
         {
             _cachedCamera = null;
             _player = null;
-            _cachedAudioSources = null;
             _isSpeeding = false;
+            _originalPitches.Clear();
 
             _isMenu = sceneName.Equals("Menu", StringComparison.OrdinalIgnoreCase);
-            
+
             Time.timeScale = 1.0f;
         }
 
@@ -92,7 +94,7 @@ namespace GrannyRecapturedMods
         private void PerformInstantRestart()
         {
             Time.timeScale = 1.0f;
-            ResetAllAudio(); 
+            RestoreAudioPitches();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
@@ -100,19 +102,28 @@ namespace GrannyRecapturedMods
         {
             if (Time.timeScale == 0f && !_isSpeeding) return;
 
-            bool safe = IsSafeToSkip();
-
-            if (Input.GetKey(TurboKey) && safe)
+            if (Input.GetKey(TurboKey) && IsSafeToSkip())
             {
                 if (!_isSpeeding)
                 {
-                    // --- START TURBO ---
                     _isSpeeding = true;
                     Time.timeScale = TurboSpeed;
 
-                    // Find current audio and pitch UP
-                    _cachedAudioSources = UnityEngine.Object.FindObjectsOfType<AudioSource>();
-                    ApplyPitchToCache(_cachedAudioSources, TurboSpeed);
+                    var allAudio = UnityEngine.Object.FindObjectsOfType<AudioSource>();
+                    _originalPitches.Clear();
+
+                    foreach (var audio in allAudio)
+                    {
+                        if (audio != null)
+                        {
+                            int id = audio.GetInstanceID();
+                            if (!_originalPitches.ContainsKey(id))
+                            {
+                                _originalPitches.Add(id, audio.pitch);
+                            }
+                            audio.pitch *= TurboSpeed;
+                        }
+                    }
                 }
             }
             else
@@ -120,27 +131,32 @@ namespace GrannyRecapturedMods
                 if (_isSpeeding)
                 {
                     _isSpeeding = false;
-                    Time.timeScale = 1.0f;                   
-                    ResetAllAudio();
-                    
-                    _cachedAudioSources = null;
+                    Time.timeScale = 1.0f;
+                    RestoreAudioPitches();
                 }
             }
         }
 
-        private void ResetAllAudio()
+        private void RestoreAudioPitches()
         {
             var allAudio = UnityEngine.Object.FindObjectsOfType<AudioSource>();
-            ApplyPitchToCache(allAudio, 1.0f);
-        }
 
-        private void ApplyPitchToCache(AudioSource[] sources, float pitch)
-        {
-            if (sources == null) return;
-            foreach (var audio in sources)
+            foreach (var audio in allAudio)
             {
-                if (audio) audio.pitch = pitch;
+                if (audio != null)
+                {
+                    int id = audio.GetInstanceID();
+                    if (_originalPitches.ContainsKey(id))
+                    {
+                        audio.pitch = _originalPitches[id];
+                    }
+                    else
+                    {
+                        audio.pitch = 1.0f;
+                    }
+                }
             }
+            _originalPitches.Clear();
         }
 
         private bool IsSafeToSkip()
@@ -174,4 +190,3 @@ namespace GrannyRecapturedMods
         }
     }
 }
-
