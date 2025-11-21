@@ -27,7 +27,7 @@ namespace GrannyRecapturedMods
         private bool _isSpeeding = false;
         private float _pendingFovChange = -1f;
 
-        private const float TurboSpeed = 20f;
+        private const float TurboSpeed = 15f;
         private const KeyCode TurboKey = KeyCode.B;
         private const KeyCode RestartKey = KeyCode.V;
 
