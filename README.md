@@ -1,4 +1,4 @@
-Granny Helper Mod v1.3
+Granny Helper Mod v1.4
 By [13_davidd.13]
 
 REQUIREMENTS:
@@ -17,14 +17,14 @@ FEATURES:
 
 2. TURBO SKIP (Hold 'B'):
    - Hold 'B' during the "Wake Up" animation or Death Scene.
-   - Speeds up the game 10x so you don't have to wait
+   - Speeds up the game 20x so you don't have to wait
    - 
 3. HOT RESTART (Press 'V'):
    - Instantly resets the run without closing the game.
    - Keeps your Difficulty and Randomize settings.
 
    /ROMANIAN
-   Granny Helper Mod v1.3
+   Granny Helper Mod v1.4
    Creat de [13_davidd.13]
 
 CE ÎȚI TREBUIE:
@@ -53,7 +53,7 @@ SĂRITURĂ TURBO (Ține apăsat 'B'):
 
 Ține tasta 'B' apăsată în timpul animației de „Trezire” sau când ești prins/mort.
 
-Mărește viteza jocului de 10 ori ca să nu pierzi timpul așteptând.
+Mărește viteza jocului de 20 ori ca să nu pierzi timpul așteptând.
 
 RESTART RAPID (Apăsare 'V'):
 
