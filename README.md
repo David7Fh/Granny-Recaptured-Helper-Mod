@@ -17,7 +17,7 @@ FEATURES:
 
 2. TURBO SKIP (Hold 'B'):
    - Hold 'B' during the "Wake Up" animation or Death Scene.
-   - Speeds up the game 20x so you don't have to wait
+   - Speeds up the game 15x so you don't have to wait
    - 
 3. HOT RESTART (Press 'V'):
    - Instantly resets the run without closing the game.
@@ -53,7 +53,7 @@ SĂRITURĂ TURBO (Ține apăsat 'B'):
 
 Ține tasta 'B' apăsată în timpul animației de „Trezire” sau când ești prins/mort.
 
-Mărește viteza jocului de 20 ori ca să nu pierzi timpul așteptând.
+Mărește viteza jocului de 15 ori ca să nu pierzi timpul așteptând.
 
 RESTART RAPID (Apăsare 'V'):
 
