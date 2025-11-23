@@ -7,7 +7,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.4.1", "13.davidd")]
+[assembly: MelonInfo(typeof(GrannyRecapturedMods.MasterMod), "Granny Helper", "1.4.2", "13.davidd")]
 [assembly: MelonGame("Buttery Stancakes", "Granny - Recaptured")]
 [assembly: MelonColor(0, 255, 0, 255)]
 
@@ -29,7 +29,7 @@ namespace GrannyRecapturedMods
 
         private const float TurboSpeed = 15f;
         private const KeyCode TurboKey = KeyCode.B;
-        private const KeyCode RestartKey = KeyCode.V;
+        private const KeyCode RestartKey = KeyCode.P;
 
         public override void OnInitializeMelon()
         {
@@ -37,8 +37,8 @@ namespace GrannyRecapturedMods
             FovEntry = MyConfig.CreateEntry<float>("SavedFOV", 110f, "Your Custom FOV");
 
             LoggerInstance.Msg("------------------------------------------------");
-            LoggerInstance.Msg(" GRANNY HELPER v1.4.1");
-            LoggerInstance.Msg(" [V] Instant Restart (Pause Fix)");
+            LoggerInstance.Msg(" GRANNY HELPER v1.4.2");
+            LoggerInstance.Msg(" [P] Instant Restart (Pause Fix)");
             LoggerInstance.Msg(" [B] Ultra-Skip");
             LoggerInstance.Msg("------------------------------------------------");
 
